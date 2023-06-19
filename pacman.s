@@ -356,6 +356,7 @@ get_direction__epilogue:
 play_tick:
 
 play_tick__prologue:
+	push	$ra
 
 play_tick__body:
 	# try_move(&player_x, &player_y, get_direction());
@@ -371,25 +372,34 @@ play_tick__body:
 	jal 	check_ghost_collision
 	beqz	$v0, do_ghost_logic_call
 	li		$v0, FALSE
-	jr		$ra
+	b		play_tick__epilogue
+	
 
 do_ghost_logic_call:
-	push 	$ra
 	jal 	do_ghost_logic
-	pop 	$ra
 
 	# if (check_ghost_collision()) {
 	jal 	check_ghost_collision
-	beqz	$v0, play_tick__epilogue
+	beqz	$v0, call_collect_dot
 	li		$v0, FALSE
-	jr		$ra
+	b		play_tick__epilogue
 
-play_tick__epilogue:
+call_collect_dot:
 	# return !collect_dot_and_check_win(dots);
 	# $a0 already holds our argument so we just make the call
 	jal		collect_dot_and_check_win	# jump to collect_dot_and_check_win and save position to $ra
-	xori	$v0, $v0, 1					# $v0 = v0 ^ 1
+	# xori	$v0, $v0, 1					# $v0 = v0 ^ 1
+
+	bnez	$v0, play_tick__set_false
+	li		$v0, 1
+	b		play_tick__epilogue
+
+play_tick__set_false:
+	li		$v0, 0
+
+play_tick__epilogue:
 	
+	pop		$ra
 	jr		$ra
 
 
@@ -412,13 +422,17 @@ copy_map__body:
 	move	$t2, $a0
 	move	$t3, $a1
 
-copy_loop:
+	# set $t1 == 0
+	li 		$t0, 0
+
+copy_map_loop:
 	lb		$t4, 0($t3)					# load byte to temp store
 	sb		$t4, 0($t2)					# store byte from temp store
 	
 	addi	$t2, $t2, 1					# increment position in array
 	addi	$t3, $t3, 1					# increment position in array
-	bne		$t0, $t1, copy_loop			# if $t0 != $t1 then goto target
+	addi	$t1, $t1, 1					# increment counter
+	bne		$t0, $t1, copy_map_loop		# if $t0 != $t1 then goto copy_map_loop
 
 copy_map__epilogue:
 	jr	$ra
@@ -431,7 +445,20 @@ get_valid_directions:
 
 get_valid_directions__prologue:
 
+
 get_valid_directions__body:
+	# initialize local vars
+	li		$t0, 0						# $t0 = 0
+	li		$t1, 0						# $t1 = 0
+
+copy_loop:
+	# x_copy = x; y_copy = y;
+	sb		$a0, 0($t2)					# store byte from temp store
+	
+	addi	$t2, $t2, 1					# increment position in array
+	addi	$t3, $t3, 1					# increment position in array
+	bne		$t0, $t1, copy_loop			# if $t0 != $t1 then goto target
+	# 
 
 get_valid_directions__epilogue:
 	jr	$ra
@@ -441,24 +468,6 @@ get_valid_directions__epilogue:
 # .TEXT <print_map>
 	.text
 print_map:
-	# Subset:   2
-	#
-	# Args:     void
-	#
-	# Returns:  void
-	#
-	# Frame:    [...]
-	# Uses:     [...]
-	# Clobbers: [...]
-	#
-	# Locals:
-	#   - ...
-	#
-	# Structure:
-	#   print_map
-	#   -> [prologue]
-	#       -> body
-	#   -> [epilogue]
 
 print_map__prologue:
 
