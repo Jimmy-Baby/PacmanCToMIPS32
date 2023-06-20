@@ -444,24 +444,51 @@ copy_map__epilogue:
 get_valid_directions:
 
 get_valid_directions__prologue:
-
+	push 	$ra
 
 get_valid_directions__body:
 	# initialize local vars
-	li		$t0, 0						# $t0 = 0
-	li		$t1, 0						# $t1 = 0
+	li		$t0, 0						# valid_dirs = 0
+	li		$t1, 0						# dir = 0
 
-copy_loop:
-	# x_copy = x; y_copy = y;
-	sb		$a0, 0($t2)					# store byte from temp store
-	
-	addi	$t2, $t2, 1					# increment position in array
-	addi	$t3, $t3, 1					# increment position in array
-	bne		$t0, $t1, copy_loop			# if $t0 != $t1 then goto target
-	# 
+try_move_loop:
+	# x_copy = x;
+	la		$t2, x_copy					# load address of x_copy
+	sw		$a0, 0($t2)					# store x at x_copy's address
+
+	# y_copy = y;
+	la		$t2, y_copy					# load address of y_copy
+	sw		$a0, 0($t2)					# store y at y_copy's address
+
+	# if (try_move(&x_copy, &y_copy, dir)) {
+	la		$a0, x_copy
+	la		$a1, y_copy
+	move	$a2, $t1
+	jal		try_move					# jump to try_move and save position to $ra
+	beqz	$v0, try_move_loop_inc		# if try_move returns 0, continue loop
+ 
+	# dir_array[valid_dirs] = dir;
+	mult	$t0, 4						# $t0 * $t1 = Hi and Lo registers
+	mflo	$t3							# copy Lo to $t3, now $t3 holds memory offset
+	add		$t3, $t3, $a2				# combine dir_array pointer address and offset
+	sw		$t1, 0($t3)
+
+	# valid_dirs++;
+	addi	$t0, $t0, 1
+
+try_move_loop_inc:
+	# dir++
+	addi	$t1, $t1, 1					# increment dir
+
+	# if dir < TOTAL_DIRECTIONS then goto try_move_loop
+	blt		$t1, TOTAL_DIRECTIONS, try_move_loop
+
+	# return valid_dirs
+	move 	$v0, $t0
 
 get_valid_directions__epilogue:
-	jr	$ra
+	pop 	$ra
+	jr		$ra
 
 
 ################################################################################
