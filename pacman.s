@@ -452,13 +452,16 @@ get_valid_directions__body:
 	li		$t1, 0						# dir = 0
 
 try_move_loop:
+	# if dir >= TOTAL_DIRECTIONS then goto get_valid_direction_return
+	bge		$t1, TOTAL_DIRECTIONS, get_valid_direction_return
+
 	# x_copy = x;
 	la		$t2, x_copy					# load address of x_copy
 	sw		$a0, 0($t2)					# store x at x_copy's address
 
 	# y_copy = y;
 	la		$t2, y_copy					# load address of y_copy
-	sw		$a0, 0($t2)					# store y at y_copy's address
+	sw		$a1, 0($t2)					# store y at y_copy's address
 
 	# if (try_move(&x_copy, &y_copy, dir)) {
 	la		$a0, x_copy
@@ -468,9 +471,8 @@ try_move_loop:
 	beqz	$v0, try_move_loop_inc		# if try_move returns 0, continue loop
  
 	# dir_array[valid_dirs] = dir;
-	mult	$t0, 4						# $t0 * $t1 = Hi and Lo registers
-	mflo	$t3							# copy Lo to $t3, now $t3 holds memory offset
-	add		$t3, $t3, $a2				# combine dir_array pointer address and offset
+	mul		$t3, $t0, 4					# calculate memory offset into dir_array
+	add		$t3, $t3, $a2				# combine dir_array pointer and offset
 	sw		$t1, 0($t3)
 
 	# valid_dirs++;
@@ -480,9 +482,9 @@ try_move_loop_inc:
 	# dir++
 	addi	$t1, $t1, 1					# increment dir
 
-	# if dir < TOTAL_DIRECTIONS then goto try_move_loop
-	blt		$t1, TOTAL_DIRECTIONS, try_move_loop
+	b		try_move_loop
 
+get_valid_direction_return:
 	# return valid_dirs
 	move 	$v0, $t0
 
