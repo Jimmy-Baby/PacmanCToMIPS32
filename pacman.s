@@ -143,6 +143,12 @@ game_won_msg:
 
 	.text
 
+############################################################
+####                                                    ####
+####   Your journey begins here, intrepid adventurer!   ####
+####                                                    ####
+############################################################
+
 ################################################################################
 #
 # Implement the following functions,
@@ -173,180 +179,238 @@ game_won_msg:
 # .TEXT <print_welcome>
 	.text
 print_welcome:
+	# Subset:   0
+	#
+	# Args:     void
+	#
+	# Returns:  void
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - ...
+	#
+	# Structure:
+	#   print_welcome
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 print_welcome__prologue:
 
+
 print_welcome__body:
-	li		$v0, 4					# $v0 = 4 (print string)
-	la		$a0, welcome_msg		# $a0 = addr(welcome_msg)
-	syscall 						# pass control to handler
+	# TODO: put your implementation of print_welcome here
+	li	$v0, 4				# syscall 4: print_string
+	la 	$a0, welcome_msg		#
+	syscall					# printf("Welcome to 1521 Pacman!\n");
 
-	li		$v0, 11					# $v0 = 11 (print character)
-	la		$a0, WALL_CHAR			# $a0 = addr(welcome_msg)
-	syscall 						# pass control to handler
+	li	$v0, 11				# syscall 11: putchar
+	la	$a0, WALL_CHAR			#
+	syscall					# printf("%c", WALL_CHAR);
 
-	li		$v0, 4
-	la		$a0, welcome_msg_wall
-	syscall
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_wall		#
+	syscall					# printf(" = wall\n");
 
-	li		$v0, 11
-	la		$a0, PLAYER_CHAR
-	syscall
+	li	$v0, 11				# syscall 11: putchar
+	la	$a0, PLAYER_CHAR		#
+	syscall					# printf("%c", PLAYER_CHAR);
 
-	li		$v0, 4
-	la		$a0, welcome_msg_you
-	syscall
-	
-	li		$v0, 11
-	la		$a0, DOT_CHAR
-	syscall
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_you		#
+	syscall					# printf(" = you\n");
 
-	li		$v0, 4
-	la		$a0, welcome_msg_dot
-	syscall
-	
-	li		$v0, 11
-	la		$a0, GHOST_CHAR
-	syscall
+	li	$v0, 11				# syscall 11: putchar
+	la	$a0, DOT_CHAR			#
+	syscall					# printf("%c", DOT_CHAR);
 
-	li		$v0, 4
-	la		$a0, welcome_msg_ghost
-	syscall
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_dot		#
+	syscall					# printf(" = dot\n");
 
-	li		$v0, 4
-	la		$a0, welcome_msg_objective
-	syscall
+	li	$v0, 11				# syscall 11: putchar
+	la	$a0, GHOST_CHAR			#
+	syscall					# printf("%c", GHOST_CHAR);
 
-	li		$v0, 4
-	la		$a0, welcome_msg_wasd
-	syscall
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_ghost		#
+	syscall					# printf(" = ghost\n");
 
-	li		$v0, 4
-	la		$a0, welcome_msg_ghost_move
-	syscall
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_objective	#
+	syscall					# printf("\nThe objective is to collect all the dots.\n");
+
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_wasd		#
+	syscall					# printf("Use WASD to move\n");
+
+	li	$v0, 4				# syscall 4: print_string
+	la	$a0, welcome_msg_ghost_move	#
+	syscall					# printf("Ghosts will move every time you move.\nTouching them will end the game.\n");
 
 print_welcome__epilogue:
 
-	jr		$ra
+	jr	$ra
 
 
 ################################################################################
 # .TEXT <main>
 	.text
 main:
+	# Subset:   1
+	#
+	# Args:     void
+	#
+	# Returns:
+	#    - $v0: int
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - ...
+	#
+	# Structure:
+	#   main
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 main__prologue:
-	push	$ra							# save return address
+	# TODO: put your prologue for main here
+	begin
+	push	$s0
+	push	$ra
 
 main__body:
-	# get_seed();
-    # print_welcome();
-	jal		get_seed					# jump to get_seed and save position to $ra
-	jal		print_welcome				# jump to print_welcome and save position to $ra
+	# TODO: put your body for main here
 
-	# do {
+	jal	get_seed
+
+	jal	print_welcome
+
 main__loop:
-	# print_map();
-	jal		print_map					# jump to print_map and save position to $ra
+	jal	print_map
 
-	# printf("You've collected ");
-	li		$v0, 4
-	la		$a0, dots_collected_msg_1
-	syscall
+	li	$v0, 4
+	la	$a0, dots_collected_msg_1
+	syscall					# printf("You've collected");
 
-	# printf("%d", dots_collected);
-	li		$v0, 1						# print integer syscall code
-	la		$t0, dots_collected			# load address of dots_collected 
-	lw		$a0, 0($t0)					# load word from the address
-    syscall
+	li	$v0, 1
+	la	$t0, dots_collected
+	lw	$s0, 0($t0)
 
-	# printf(" out of ");
-	li		$v0, 4
-	la		$a0, dots_collected_msg_2
-	syscall
+	move	$a0, $s0
 
-	# printf("%d", MAP_DOTS);
-	li		$v0, 1						# print integer syscall code
-	li		$a0, MAP_DOTS				# $a0 = MAP_DOTS
-    syscall
+	syscall					# printf("%d", dots_collected);
 
-	# printf(" dots.\n");
-	li		$v0, 4
-	la		$a0, dots_collected_msg_3
-	syscall
+	li	$v0, 4
+	la	$a0, dots_collected_msg_2
+	syscall					# printf("out of");
 
-	# } while(play_tick(&dots_collected))
-	la		$a0, dots_collected
-	jal		play_tick					# jump to play_tick and save position to $ra
-	bnez	$v0, main__loop				# if $v0 != 0 then goto main__loop
+	li	$v0, 1
+	li	$a0, MAP_DOTS
+	syscall					# printf("%d", MAP_DOTS);
+
+	li	$v0, 4
+	la	$a0, dots_collected_msg_3
+	syscall					# printf("dots.\n");
+
+	la	$a0, dots_collected
+	jal	play_tick			
+	beqz	$v0, main__epilogue
 	
-	# return 0;
-	li		$v0, 0						# $v0 = 0
+
+	b	main__loop
 
 main__epilogue:
-	pop		$ra							# restore return address
-
-	jr		$ra
+	# TODO: put your epilogue for main here
+	
+	pop	$ra
+	pop	$s0
+	end
+	jr	$ra
 
 
 ################################################################################
 # .TEXT <get_direction>
 	.text
 get_direction:
+	# Subset:   1
+	#
+	# Args:     void
+	#
+	# Returns:
+	#    - $v0: int
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - $t0: FALSE
+	#   - $t1: int input
+	# Structure:
+	#   get_direction
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 get_direction__prologue:
+	
 
 get_direction__body:
-	# printf("Choose next move (wasd): ");
-	li		$v0, 4
-	la		$a0, choose_move_msg
+	li	$v0, 4					# syscall 4: print_string
+	la	$a0, choose_move_msg			#
+	syscall						# printf("Choose next move (wasd): ");
+
+get_direction_loop_cond:
+	li	$t0, FALSE				# move FALSE into register
+	li	$t2, TRUE				# move TRUE into register
+	li	$t1, 0					# int input = 0;		
+
+	beq	$t2, $t0, get_direction__epilogue	# if (FALSE) goto get_direction__epilogue;
+
+	li	$v0, 12					# syscall 12: read_char
 	syscall
+	move	$t1, $v0				# int input = getchar();
 
-check_key:
-	li		$v0, 12						# read character syscall code
-	syscall
+first_get_direction_cond:
+	bne	$t1, 'a', second_get_direction_cond	# if (input != 'a') goto second_get_direction_cond;
+	li	$v0, LEFT				#
+	b	get_direction__epilogue			# return LEFT;
 
-# if (input == 'a') {
-	bne		$v0, 'a', check_up_key		# if $v0 != 'a' then goto check_up_key
-# return LEFT;
-	li		$v0, LEFT					# $v0 = LEFT
-	b		get_direction__epilogue		# branch to get_direction__epilogue
+second_get_direction_cond:
+	bne	$t1, 'w', third_get_direction_cond	# if (input != 'w') goto third_get_direction_cond;
+	li	$v0, UP					#
+	b	get_direction__epilogue			# return UP;
 
-check_up_key:
-# if (input == 'w') {
-	bne		$v0, 'w', check_right_key	# if $v0 != 'w' then goto check_right_key
-# return UP;
-	li		$v0, UP						# $v0 = UP
-	b		get_direction__epilogue		# branch to get_direction__epilogue
+third_get_direction_cond:
+	bne	$t1, 'd', fourth_get_direction_cond	# if (input != 'd') goto fourth_get_direction_cond;
+	li	$v0, RIGHT				#
+	b	get_direction__epilogue			# return RIGHT;
 
-check_right_key:
-# if (input == 'd') {
-	bne		$v0, 'd', check_down_key	# if $v0 != 'd' then goto check_down_key
-# return RIGHT;
-	li		$v0, RIGHT					# $v0 = RIGHT
-	b		get_direction__epilogue		# branch to get_direction__epilogue
+fourth_get_direction_cond:
+	bne	$t1, 's', print_newline			# if (input != 's') goto print_newline;
+	li	$v0, DOWN				#
+	b 	get_direction__epilogue			# return DOWN;
 
-check_down_key:
-# if (input == 's') {
-	bne		$v0, 's', check_newline		# if $v0 != 's' then goto check_newline
-# return DOWN;
-	li		$v0, DOWN					# $v0 = DOWN
-	b		get_direction__epilogue		# branch to get_direction__epilogue
-
-check_newline:
-# continue;
-	beq		$v0, '\n', check_key		# if $v0 == '\n' then goto check_key
+print_newline:
+	beq	$t1, 10, get_direction_loop_cond	# if (input == '\n') goto get_direction_loop_cond;
 
 invalid_input:
-	# printf("Invalid input! Use the wasd keys to move.\n");
-	li		$v0, 4
-	la		$a0, invalid_input_msg
-	syscall
+	li	$v0, 4					# syscall 4: print_string
+	la	$a0, invalid_input_msg			# 
+	syscall						# printf("Invalid input! Use the wasd keys to move.\n");
 
-	# end of while
-	b		check_key					# branch to check_key
+	b	get_direction_loop_cond			# goto get_direction_loop_cond;
 
 get_direction__epilogue:
+	
 	jr	$ra
 
 
@@ -354,155 +418,375 @@ get_direction__epilogue:
 # .TEXT <play_tick>
 	.text
 play_tick:
+	# Subset:   1
+	#
+	# Args:
+	#    - $a0: int *dots_collected
+	#	
+	#
+	# Returns:
+	#    - $v0: int
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#    - $a1: *player_x
+	#    - $a2: *player_y
+	#    - $a3: results from get_direction
+	#
+	# Structure:
+	#   play_tick
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 play_tick__prologue:
 	push	$ra
-
+	push	$s0
 play_tick__body:
-	# try_move(&player_x, &player_y, get_direction());
-	push	$a0
-	jal 	get_direction
-	la		$a0, player_x
-	la		$a1, player_y
-	move	$a2, $v0					# $v0 holds get_direction result
-	jal 	try_move
-	pop		$a0
+	move	$s0, $a0				# store *dots into the stack
+
+	jal	get_direction				# get_direction();
+	move	$a0, $s0
+	move	$a2, $v0				# store result from get_direction
 	
-	# if (check_ghost_collision()) {
-	jal 	check_ghost_collision
-	beqz	$v0, do_ghost_logic_call
-	li		$v0, FALSE
-	b		play_tick__epilogue
-	
+	la	$a0, player_x				#
+	la	$a1, player_y				#
+	jal	try_move				# try_move(&player_x, &player_y, get_direction());
 
-do_ghost_logic_call:
-	jal 	do_ghost_logic
+play_tick_check_ghost_collision:
+	jal	check_ghost_collision			# check_ghost_collision();
+	beqz	$v0, play_tick_do_ghost_logic		# if (!check_ghost_collision()) goto play_tick_do_ghost_logic;
 
-	# if (check_ghost_collision()) {
-	jal 	check_ghost_collision
-	beqz	$v0, call_collect_dot
-	li		$v0, FALSE
-	b		play_tick__epilogue
+play_tick_return_false:
+	li	$v0, FALSE					# return FALSE
+	b	play_tick__epilogue			# goto play_tick__epilogue;
 
-call_collect_dot:
-	# return !collect_dot_and_check_win(dots);
-	# $a0 already holds our argument so we just make the call
-	jal		collect_dot_and_check_win	# jump to collect_dot_and_check_win and save position to $ra
-	# xori	$v0, $v0, 1					# $v0 = v0 ^ 1
+play_tick_do_ghost_logic:
+	jal	do_ghost_logic				# do_ghost_logic();
 
-	bnez	$v0, play_tick__set_false
-	li		$v0, 1
-	b		play_tick__epilogue
+play_tick_check_ghost_collision_2:
+	jal	check_ghost_collision			# check_ghost_collision();
+	beqz	$v0, play_tick_collect_dot_check_win	# if (!check_ghost_collision()) goto play_tick_collect_dot_check_win;
 
-play_tick__set_false:
-	li		$v0, 0
+	b	play_tick_return_false			# goto play_tick_return_false
+
+play_tick_collect_dot_check_win:
+	move	$a0, $s0				# load *dots
+	jal	collect_dot_and_check_win		# collect_dot_and_check_win();
+	bnez	$v0, play_tick_collect_dot_false	# if (collect_dot_and_check_win(dots) != 0) goto play_tick_false;
+
+	li	$v0, 1					# return TRUE;	
+	b	play_tick__epilogue
+
+play_tick_collect_dot_false:
+	li	$v0, 0
 
 play_tick__epilogue:
-	
-	pop		$ra
-	jr		$ra
+	pop	$s0
+	pop	$ra
+	jr	$ra
 
 
 ################################################################################
 # .TEXT <copy_map>
 	.text
 copy_map:
+	# Subset:   2
+	#
+	# Args:
+	#    - $a0: char dst[MAP_HEIGHT][MAP_WIDTH]
+	#    - $a1: char src[MAP_HEIGHT][MAP_WIDTH]
+	#
+	# Returns:  void
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - $t0: int i
+	#   - $t1: int j
+	#   - $t2: MAP_HEIGHT
+	#   - $t3: MAP_WIDTH
+	#   - $t4: temporary result dest[i][j]( i * MAP_WIDTH + j )
+	#   - $t5: temporary result source[i][j]( i * MAP_WIDTH + j )
+	#   - $t6: temporary storage for source[i][j]	
+	# Structure:
+	#   copy_map
+	#   -> [prologue]
+	#       -> body
+	#		-> height_loop__init
+	#		-> height_loop__cond
+	#		-> height_loop__body
+	#		-> width_loop__init
+	#		-> width_loop__cond
+	#		-> width_loop__cond
+	#		-> width_loop__body
+	#		-> height_loop__Step
+	#		-> height_loop__end
+	#   -> [epilogue]
 
 copy_map__prologue:
-
+	begin
+	push	$ra
 copy_map__body:
-	# first calculate size of map in memory; 
-	# memory is contiguous so we can just copy all of the data in a single loop
-	li		$t0, MAP_HEIGHT
-	li		$t1, MAP_WIDTH
-	mult	$t0, $t1					# $t0 * $t1 = Hi and Lo registers
-	mflo	$t0							# copy Lo to $t0, now $t0 holds array size
 
-	# store base address of arrays
-	move	$t2, $a0
-	move	$t3, $a1
+height_loop__init:
+	li	$t0, 0						# i = 0
 
-	# set $t1 == 0
-	li 		$t0, 0
+height_loop__cond:
+	bge	$t0, MAP_HEIGHT, height_loop__end 		# if (i >= MAP_HEIGHT) goto height_loop__end;
 
-copy_map_loop:
-	lb		$t4, 0($t3)					# load byte to temp store
-	sb		$t4, 0($t2)					# store byte from temp store
-	
-	addi	$t2, $t2, 1					# increment position in array
-	addi	$t3, $t3, 1					# increment position in array
-	addi	$t1, $t1, 1					# increment counter
-	bne		$t0, $t1, copy_map_loop		# if $t0 != $t1 then goto copy_map_loop
+height_loop__body:
+
+width_loop__init:
+	li	$t1, 0						# j = 0;
+
+width_loop__cond:
+	bge	$t1, MAP_WIDTH, height_loop__step		# if (j >= MAP_WIDTH) goto height_loop__step;
+
+width_loop__body:
+	mul	$t4, $t0, MAP_WIDTH				# (i * MAP_WIDTH			
+    	addu    $t4, $t4, $t1      				#  + j)	
+    	addu    $t4, $a0, $t4         				# + dest[i][j] 
+
+	mul	$t5, $t0, MAP_WIDTH				# (i * MAP_WIDTH
+    	addu    $t5, $t5, $t1         				# + j)
+	addu    $t5, $a1, $t5					# + source[i][j] 
+
+	lb      $t6, 0($t5)           				# Load a byte from source[i][j]
+    	sb      $t6, 0($t4)           				# Store the byte in dest[i][j]
+
+	addi	$t1, $t1, 1					# j++;
+	b	width_loop__cond				# goto width_loop__cond;
+
+height_loop__step:
+	addi	$t0, $t0, 1					# i++;
+	b	height_loop__cond				# goto height_loop__cond;		
+
+height_loop__end:
 
 copy_map__epilogue:
-	jr	$ra
+	pop 	$ra
+	end
+	jr	$ra						# return;
 
 
 ################################################################################
 # .TEXT <get_valid_directions>
 	.text
 get_valid_directions:
+	# Subset:   2
+	#
+	# Args:
+	#    - $a0: int x
+	#    - $a1: int y
+	#    - $a2: int dir_array[TOTAL_DIRECTIONS]
+	#
+	# Returns:
+	#    - $v0: int
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - $t0: valid_dirs * 4
+	#   - $t1: address of dir_array[valid_dirs]
+	#   
+	#   
+	# Structure:
+	#   get_valid_directions
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 get_valid_directions__prologue:
-	push 	$ra
-
+	begin
+	push	$s4
+	push	$s3
+	push	$s2
+	push	$s1
+	push	$s0
+	push	$ra
+	
 get_valid_directions__body:
-	# initialize local vars
-	li		$t0, 0						# valid_dirs = 0
-	li		$t1, 0						# dir = 0
+	move	$s0, $a2					# store dir_array in $s0
+	li	$s1, 0						# int valid_dirs = 0
 
-try_move_loop:
-	# if dir >= TOTAL_DIRECTIONS then goto get_valid_direction_return
-	bge		$t1, TOTAL_DIRECTIONS, get_valid_direction_return
+loop__init:
+	li	$s2, 0						# int dir = 0;		
 
-	# x_copy = x;
-	la		$t2, x_copy					# load address of x_copy
-	sw		$a0, 0($t2)					# store x at x_copy's address
+	move	$s3, $a0					# store x in $s3	
+	move	$s4, $a1					# store y in $s4
+loop__cond:
+	bge	$s2, TOTAL_DIRECTIONS, loop__end		# if (dir >= TOTAL_DIRECTIONS) goto loop__end;
 
-	# y_copy = y;
-	la		$t2, y_copy					# load address of y_copy
-	sw		$a1, 0($t2)					# store y at y_copy's address
+loop__body:
+	
+	la	$a0, x_copy					# load address of x_copy into $a0
+	sw	$s3, ($a0)					# store value of x in address of x_copy
+	la	$a1, y_copy					# load address of y_copy into $a1
+	sw	$s4, ($a1)					# store value of y in address of y_copy
+	
 
-	# if (try_move(&x_copy, &y_copy, dir)) {
-	la		$a0, x_copy
-	la		$a1, y_copy
-	move	$a2, $t1
-	jal		try_move					# jump to try_move and save position to $ra
-	beqz	$v0, try_move_loop_inc		# if try_move returns 0, continue loop
- 
-	# dir_array[valid_dirs] = dir;
-	mul		$t3, $t0, 4					# calculate memory offset into dir_array
-	add		$t3, $t3, $a2				# combine dir_array pointer and offset
-	sw		$t1, 0($t3)
+loop__check_try_move_cond:
+	move	$a2, $s2					# move dir_array into $a2
 
-	# valid_dirs++;
-	addi	$t0, $t0, 1
+	jal	try_move					# 
 
-try_move_loop_inc:
-	# dir++
-	addi	$t1, $t1, 1					# increment dir
+	beqz	$v0, loop__step					# if (!try_move(&x_copy, &y_copy, dir)) goto loop__step;
 
-	b		try_move_loop
+loop__check_try_move_body:
+	mul	$t0, $s1, 4					# valid_dirs * 4
+	add	$t1, $s0, $t0					# address of dir_array[valid_dirs]
+	sw	$s2, 0($t1)					# store dir into dir_array[valid_dirs]
 
-get_valid_direction_return:
-	# return valid_dirs
-	move 	$v0, $t0
+	add	$s1, $s1, 1					# valid_dirs++;
+
+loop__step:
+	add	$s2, $s2, 1					#  dir++;
+	b	loop__cond					# goto loop__cond;
+
+loop__end:
+	move 	$v0, $s1					# return valid_dirs;
 
 get_valid_directions__epilogue:
-	pop 	$ra
-	jr		$ra
+	pop	$ra
+	pop	$s0
+	pop	$s1
+	pop	$s2
+	pop	$s3
+	pop	$s4
+	end
+	jr	$ra
 
 
 ################################################################################
 # .TEXT <print_map>
 	.text
 print_map:
+	# Subset:   2
+	#
+	# Args:     void
+	#
+	# Returns:  void
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - ...
+	#
+	# Structure:
+	#   print_map
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 print_map__prologue:
+	push 	$ra
 
 print_map__body:
+	# copy_map(map_copy, map);
+	la		$a0, map_copy						# load address of map_copy
+	la		$a1, map							# load address of map
+	jal		copy_map							# copy_map(map_copy, map);
+
+	# load player_y and _x into $t1 and $t2, respectively
+	la 		$t1, player_y
+	lw		$t1, ($t1)
+	la 		$t2, player_x
+	lw		$t2, ($t2)
+
+	# calculate offset into map_copy for our player character
+	mul		$t3, $t1, MAP_WIDTH					# (player_y * MAP_WIDTH)
+	add		$t3, $t3, $t2						# (player_y * MAP_WIDTH) + player_x
+	la		$t4, map_copy						# load address of map_copy into $t4
+	add		$t4, $t4, $t3						# $t4 = map_copy[player_y][player_x]
+
+	li		$t5, PLAYER_CHAR
+	sb		$t5, ($t4)							# map_copy[player_y][player_x] = PLAYER_CHAR;
+
+loop_ghost_init:
+	# i = 0
+	li		$t0, 0
+
+loop_ghost_cond:
+	# if (i >= NUM_GHOSTS) goto loop_print_height__init
+	bge		$t0, NUM_GHOSTS, loop_print_height_init	
+
+loop_ghost_body:
+	# get our ghost structure in memory
+	mul		$t1, $t0, SIZEOF_GHOST_T			# i * 12
+	la		$t2, ghosts
+	add		$t2, $t2, $t1						# ghosts[i] = ghosts + (i * 12);
+
+	# get our x/y values from struct in memory
+	lw		$t3, GHOST_T_Y_OFFSET($t2)			# $t3 = ghostd[i].y
+	lw		$t4, GHOST_T_X_OFFSET($t2)			# $t4 = ghosts[i].x
+
+	# calculate address of memory to write our player character '@'
+	mul		$t3, $t3, MAP_WIDTH					# ghosts[i].y * MAP_WIDTH
+	add		$t3, $t4, $t3						# (ghosts[i].y * MAP_WIDTH) + ghosts[i].x
+	la		$t4, map_copy						# load address of map_copy into $t4
+	add		$t3, $t3, $t4						# $s1 = map_copy[ghosts[i].y][ghosts[i].x]
+
+	# load ghost char into reg, and then store it at our address
+	li		$t4, GHOST_CHAR
+	sb		$t4, ($t3)
+
+loop_ghost_step:
+	# i++;
+	add		$t0, $t0, 1		
+
+	b		loop_ghost_cond
+
+loop_print_height_init:
+	# i = 0;
+	li		$t0, 0
+
+loop_print_height_cond:
+	bge		$t0, MAP_HEIGHT, loop_end
+
+loop_print_height_body:
+
+loop_print_width_init:
+	li		$t1, 0								# j = 0;
+
+loop_print_width_cond:
+	bge		$t1, MAP_WIDTH, loop_print_height_step
+
+	mul		$t2, $t0, MAP_WIDTH					# i = i * MAP_WIDTH
+	add		$t2, $t1, $t2						# (i * MAP_WIDTH) + j
+	la		$t3, map_copy						# load address of map_copy into $t4
+	add		$t2, $t3, $t2						# map_copy[i][j]
+	lb		$t2, ($t2)							# load byte from address
+
+	li		$v0, 11								# syscall 11: putchar
+	move		$a0, $t2							#
+	syscall										# putchar(map_copy[i][j]);
+
+	add 		$t1, $t1, 1
+	b		loop_print_width_cond
+
+loop_print_height_step:
+	li	$v0, 11
+	li		$a0, '\n'
+	syscall
+
+	add		$t0, $t0, 1
+	b		loop_print_height_cond
+
+loop_end:
 
 print_map__epilogue:
+	pop	$ra
+
 	jr	$ra
 
 
@@ -525,19 +809,72 @@ try_move:
 	# Clobbers: [...]
 	#
 	# Locals:
-	#   - ...
-	#
+	#   - $t0: int new_x
+	#   - $t1: int new_y
+	#   - $t2: temporary storage for int directions
+	#   - $t3: temporary result: new_y * MAP_WIDTH
+	#   - $t4: map[new_y][new_x]
 	# Structure:
 	#   try_move
 	#   -> [prologue]
 	#       -> body
+	#		-> try_move_first_cond
+	#		-> try_move_second_cond
+	#		-> try_move_third_cond
+	#		-> try_move_fourth_cond
+	#		-> try_move_check_wall_char
+	# 		-> try_move_set_pointers
 	#   -> [epilogue]
 
 try_move__prologue:
-
+	begin
+	push	$ra
 try_move__body:
+	lw	$t0, ($a0)						# new_x = *x
+	lw	$t1, ($a1)						# new_y = *y
 
+	move	$t2, $a2						# move value of direction into $t2
+
+try_move_first_cond:
+	bne	$t2, LEFT, try_move_second_cond				# if (direction != LEFT) goto try_move_second_cond;
+
+	subu	$t0, $t0, 1						# new_x--;
+	b	try_move_check_wall_char				# goto try_move_check_wall_char;
+
+try_move_second_cond:
+	bne	$t2, UP, try_move_third_cond				# if (direction != UP) goto try_move_third_cond;
+
+	subu	$t1, $t1, 1						# new_y--;
+	b	try_move_check_wall_char				# goto try_move_check_wall_char;
+
+try_move_third_cond:
+	bne	$t2, RIGHT, try_move_fourth_cond			# if (direction != RIGHT) goto try_move_fourth_cond;
+
+	add	$t0, $t0, 1						# new_x++;
+	b	try_move_check_wall_char				# goto try_move_check_wall_char;
+
+
+try_move_fourth_cond:
+	bne	$t2, DOWN, try_move_check_wall_char			# if (direction != DOWN) goto try_move_check_wall_char;
+
+	add	$t1, $t1, 1						# new_y++;
+
+try_move_check_wall_char:
+	mul	$t3, $t1, MAP_WIDTH					# (new_y * MAP_WIDTH		
+	add	$t3, $t3, $t0						# + new_x)
+	lb	$t4, map($t3)						# + map = map[new_y][new_x]
+
+	bne	$t4, WALL_CHAR, try_move_set_pointers			# if (map[new_y][new_x] != WALL_CHAR) goto try_move_set_pointers;
+	li	$v0, FALSE						# return FALSE;
+	b	try_move__epilogue
+
+try_move_set_pointers:
+	sw	$t0, ($a0)						# *x = new_x;
+	sw	$t1, ($a1)						# *y = new_y;
+	li	$v0, TRUE 						# return TRUE;
 try_move__epilogue:
+	pop	$ra
+	end
 	jr	$ra
 
 
