@@ -310,8 +310,7 @@ void do_ghost_logic(void) {
         // it randomly chooses a valid direction to go
         //
         // NOTE - `||` is a 'short-circuiting' operator
-        if (
-            n_valid_dirs > 2
+        if (n_valid_dirs > 2
             // try_move tries to move the ghost if it can
             || !try_move(
                 &ghosts[ghost_id].x,
