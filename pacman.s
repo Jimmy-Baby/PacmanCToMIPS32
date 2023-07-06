@@ -463,11 +463,11 @@ play_tick__body:
 	move	$s0, $a0
 	
 	# try_move(&player_x, &player_y, get_direction());
-	la		$a0, player_x
-	la		$a1, player_y
 	jal		get_direction
 	move	$a2, $v0						# store result from get_direction
-	jal		try_move	
+	la		$a0, player_x
+	la		$a1, player_y
+	jal		try_move
 
     # if (check_ghost_collision()) goto play_tick_return_false
 	jal		check_ghost_collision
@@ -544,7 +544,6 @@ copy_map:
 	#   -> [epilogue]
 
 copy_map__prologue:
-	push	$ra
 
 copy_map__body:
 
@@ -591,8 +590,6 @@ height_loop_step:
 height_loop_end:
 
 copy_map__epilogue:
-	pop 	$ra
-
 	jr		$ra
 
 
@@ -702,13 +699,15 @@ print_map:
 	#   -> [epilogue]
 
 print_map__prologue:
-	push 	$ra
+	#push 	$ra
 
 print_map__body:
 	# copy_map(map_copy, map);
+	push $ra
 	la		$a0, map_copy						# load address of map_copy
 	la		$a1, map							# load address of map
 	jal		copy_map							# copy_map(map_copy, map);
+	pop $ra
 
 	# load player_y and _x into $t1 and $t2, respectively
 	la 		$t1, player_y
@@ -796,9 +795,9 @@ loop_print_height_step:
 	b		loop_print_height_cond
 
 print_map__epilogue:
-	pop	$ra
+	#pop		$ra
 
-	jr	$ra
+	jr		$ra
 
 
 ################################################################################
@@ -957,7 +956,7 @@ collision_loop_body:
 collision_loop_step:
 	# i++
 	add		$t0, $t0, 1
-	b		loop_print_height_cond
+	b		collision_loop_cond
 
 check_ghost_collision_false:
 	# return FALSE;
@@ -1108,16 +1107,11 @@ ghost_id_loop_body:
     #     		&ghosts[ghost_id].y,
     #     		ghosts[ghost_id].direction
     #     ))
-
-	li		$v0, 34
-	add		$a0, $s1, GHOST_T_X_OFFSET
-	syscall
-
 	add		$a0, $s1, GHOST_T_X_OFFSET
 	add		$a1, $s1, GHOST_T_Y_OFFSET
 	lw		$a2, GHOST_T_DIRECTION_OFFFSET($s1)
 	jal		try_move
-	bnez	$v0, ghost_try_move
+	beqz	$v0, ghost_try_move
 
 	# if neither condition fulfilled; jump to increment
 	b 		ghost_id_loop_step
@@ -1125,8 +1119,7 @@ ghost_id_loop_body:
 ghost_try_move:
 	# uint32_t dir_index = random_number() % n_valid_dirs;
 	jal		random_number
-	div		$v0, $s2			# $v0 / $s2
-	mfhi	$t2					# $t2 = dir_index = $v0 % $s2
+	remu	$t2, $v0, $s2
 
 	# ghosts[ghost_id].direction = valid_directions[dir_index];
 	mul		$t3, $t2, 4	
@@ -1202,24 +1195,26 @@ get_seed__prologue:
 	push	$ra
 
 get_seed__body:
-get_seed__loop:					# while (TRUE) {
-	li	$v0, 4				#   syscall 4: print_string
+
+get_seed__loop:								# while (TRUE) {
+	li	$v0, 4								#   syscall 4: print_string
 	la	$a0, get_seed_prompt_msg
-	syscall					#   printf("Enter a non-zero number for the seed: ");
+	syscall									#   printf("Enter a non-zero number for the seed: ");
 
-	li	$v0, 5				#   syscall 5: read_int
+	li	$v0, 5								#   syscall 5: read_int
 	syscall
-	sw	$v0, lfsr_state			#   scanf("%u", &lfsr_state);
+	sw	$v0, lfsr_state						#   scanf("%u", &lfsr_state);
 
-	bnez	$v0, get_seed__loop_end		#   if (lfsr_state != 0) break;
+	bnez	$v0, get_seed__loop_end			#   if (lfsr_state != 0) break;
 
-	li	$v0, 4				#   syscall 4: print_string
+	li	$v0, 4								#   syscall 4: print_string
 	la	$a0, invalid_seed_msg
-	syscall					#   printf("Seed can't be zero.\n");
+	syscall									#   printf("Seed can't be zero.\n");
 
-	b	get_seed__loop			# }
+	b	get_seed__loop						# }
 
 get_seed__loop_end:
+
 get_seed__epilogue:
 	pop	$ra
 	end
